@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поиск голосований</title>
+    <script>
+        function loadPollStats(pollId) {
+            fetch(`/api/analytics/stats/?poll_id=${pollId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('poll-title').innerText = data.poll;
+                    document.getElementById('poll-results').innerHTML = data.results
+                        .map(result => `<li>${result.option}: ${result.votes} (${result.percentage}%)</li>`)
+                        .join('');
+                });
+        }
+
+        function searchPolls(query) {
+            fetch(`/api/analytics/filter/?search=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    const pollList = document.getElementById('poll-list');
+                    pollList.innerHTML = '';
+                    data.forEach(poll => {
+                        const listItem = document.createElement('li');
+                        listItem.innerText = poll.title;
+                        listItem.onclick = () => loadPollStats(poll.id);
+                        pollList.appendChild(listItem);
+                    });
+                });
+        }
+    </script>
+</head>
+<body>
+    <h1>Поиск голосований</h1>
+    <input type="text" id="search-input" placeholder="Введите текст для поиска..." onkeyup="searchPolls(this.value)" />
+    <ul id="poll-list">
+        <!-- Список найденных голосований -->
+    </ul>
+    <hr />
+    <h2 id="poll-title">Выберите голосование</h2>
+    <ul id="poll-results">
+        <!-- Результаты голосования -->
+    </ul>
+</body>
+</html>
